@@ -1,1 +1,145 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Malla Interactiva Farmacia</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #faf5ff;
+      color: #2c2c2c;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #6a1b9a;
+    }
+    .malla {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .ramo {
+      background-color: #d1c4e9;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    .ramo.locked {
+      background-color: #f3e5f5;
+      cursor: not-allowed;
+      color: #aaa;
+      box-shadow: none;
+    }
+    .ramo:hover:not(.locked) {
+      background-color: #b39ddb;
+      transform: scale(1.03);
+    }
+  </style>
+</head>
+<body>
+  <h1>Malla Curricular Interactiva - Farmacia</h1>
+  <div id="malla" class="malla"></div>
+  <script>
+    const ramos = [
+      // Primer año
+      { id: "bioCel", nombre: "Biología celular", abre: ["morf"], correq: [] },
+      { id: "qg1", nombre: "Química general I", abre: ["qg2", "qo1"], correq: [] },
+      { id: "algebra", nombre: "Elementos de álgebra", abre: ["fisica"], correq: [] },
+      { id: "fg1", nombre: "Formación general", abre: ["fg2"], correq: [] },
+      { id: "intro", nombre: "Introducción a farmacia", abre: [], correq: [] },
+      { id: "morf", nombre: "Morfología", abre: ["fisio"], correq: [] },
+      { id: "qg2", nombre: "Química general II", abre: ["qa", "fisicoq"], correq: [] },
+      { id: "qo1", nombre: "Química orgánica I", abre: ["qo2"], correq: [] },
+      { id: "fisica", nombre: "Física", abre: ["fisicoq"], correq: [] },
+      { id: "ing1", nombre: "Inglés I", abre: ["ing2"], correq: [] },
+
+      // Segundo año
+      { id: "fisio", nombre: "Fisiología", abre: ["fisioSemiol", "bioqg"], correq: [] },
+      { id: "qa", nombre: "Química analítica", abre: ["qai"], correq: [] },
+      { id: "qo2", nombre: "Química orgánica II", abre: ["bioqg", "fquim1"], correq: [] },
+      { id: "fisicoq", nombre: "Fisicoquímica", abre: ["biofarm"], correq: [] },
+      { id: "ing2", nombre: "Inglés II", abre: ["ing3"], correq: [] },
+      { id: "fisioSemiol", nombre: "Fisiopatología y semiología", abre: ["salud1", "farmaHum1", "bioqClin"], correq: [] },
+      { id: "qai", nombre: "Química analítica e instrumental", abre: ["fquim1", "int1"], correq: [] },
+      { id: "bioqg", nombre: "Bioquímica general", abre: ["microb"], correq: [] },
+      { id: "biofarm", nombre: "Farmacocinética y biofarmacia", abre: ["farmaHum1", "tecfarm1"], correq: [] },
+      { id: "ing3", nombre: "Inglés III", abre: ["ing4"], correq: [] },
+
+      // Tercer año
+      { id: "salud1", nombre: "Salud pública I", abre: ["salud2", "farmaVig"], correq: [] },
+      { id: "fquim1", nombre: "Farmacoquímica I", abre: ["fquim2", "botanica"], correq: ["farmaHum1"] },
+      { id: "microb", nombre: "Microbiología", abre: ["bioMol", "tecfarm2"], correq: [] },
+      { id: "farmaHum1", nombre: "Farmacología humana I", abre: ["farmaHum2", "botanica"], correq: ["fquim1"] },
+      { id: "ing4", nombre: "Inglés IV", abre: [], correq: [] },
+      { id: "fquim2", nombre: "Farmacoquímica II", abre: ["toxico"], correq: ["farmaHum2"] },
+      { id: "bioMol", nombre: "Biología molecular y biotecnología", abre: ["bioqClin"], correq: [] },
+      { id: "farmaHum2", nombre: "Farmacología humana II", abre: ["farmaVig", "farmaHum3"], correq: ["fquim2"] },
+      { id: "botanica", nombre: "Botánica y farmacognosia", abre: ["farmaHum3"], correq: [] },
+      { id: "tecfarm1", nombre: "Tecnología farmacéutica I", abre: ["tecfarm2"], correq: [] },
+
+      // Cuarto año
+      { id: "farmaVig", nombre: "Farmacovigilancia y educación en salud", abre: ["salud2", "farmaClin1"], correq: ["bioqClin"] },
+      { id: "bioqClin", nombre: "Bioquímica clínica", abre: ["toxico", "farmaClin1"], correq: [] },
+      { id: "farmaHum3", nombre: "Farmacología humana III", abre: ["farmaClin1"], correq: [] },
+      { id: "tecfarm2", nombre: "Tecnología farmacéutica II", abre: ["tecCosm"], correq: [] },
+      { id: "fg2", nombre: "Formación general II", abre: ["fg3"], correq: [] },
+      { id: "salud2", nombre: "Salud pública II", abre: ["farmaEcon", "adminSalud"], correq: [] },
+      { id: "toxico", nombre: "Toxicología clínica y forense", abre: ["int1", "farmaClin2"], correq: ["farmaClin1"] },
+      { id: "farmaClin1", nombre: "Farmacia clínica y atención farmacéutica I", abre: ["adminSalud", "farmaClin2"], correq: ["toxico"] },
+      { id: "tecCosm", nombre: "Tecnología cosmética", abre: ["calidad", "int1"], correq: [] },
+      { id: "fg3", nombre: "Formación general III", abre: ["fg4"], correq: [] },
+
+      // Quinto año
+      { id: "farmaEcon", nombre: "Farmacoeconomía y marketing", abre: ["gestion", "etica", "comunitaria"], correq: ["adminSalud"] },
+      { id: "adminSalud", nombre: "Administración y gestión en salud", abre: ["gestion", "etica", "hospitalaria"], correq: ["farmaEcon"] },
+      { id: "int1", nombre: "Integrador I", abre: ["comunitaria"], correq: [] },
+      { id: "farmaClin2", nombre: "Farmacia clínica y atención farmacéutica II", abre: ["hospitalaria", "int2", "comunitaria"], correq: [] },
+      { id: "calidad", nombre: "Gestión y control de calidad", abre: ["comunitaria"], correq: [] },
+      { id: "gestion", nombre: "Gestión de recursos", abre: [], correq: [] },
+      { id: "etica", nombre: "Ética y legislación farmacéutica", abre: [], correq: [] },
+      { id: "hospitalaria", nombre: "Farmacia hospitalaria", abre: [], correq: [] },
+      { id: "int2", nombre: "Integrador II", abre: [], correq: [] },
+      { id: "comunitaria", nombre: "Práctica en farmacia comunitaria", abre: [], correq: [] },
+      { id: "fg4", nombre: "Formación general IV", abre: [], correq: [] }
+    ];
+
+    const aprobados = new Set();
+
+    function renderMalla() {
+      const container = document.getElementById("malla");
+      container.innerHTML = "";
+      ramos.forEach(ramo => {
+        const div = document.createElement("div");
+        div.className = "ramo";
+        div.id = ramo.id;
+        div.innerText = ramo.nombre;
+        if (!puedeVerRamo(ramo)) div.classList.add("locked");
+        div.onclick = () => aprobarRamo(ramo);
+        container.appendChild(div);
+      });
+    }
+
+    function puedeVerRamo(ramo) {
+      if (aprobados.has(ramo.id)) return true;
+      const reqsOK = ramo.abre.length === 0 || ramo.abre.every(r => aprobados.has(r));
+      const correqOK = ramo.correq.every(c => aprobados.has(c));
+      return reqsOK && correqOK;
+    }
+
+    function aprobarRamo(ramo) {
+      if (document.getElementById(ramo.id).classList.contains("locked")) return;
+      if (aprobados.has(ramo.id)) return;
+      aprobados.add(ramo.id);
+      renderMalla();
+    }
+
+    window.onload = renderMalla;
+  </script>
+</body>
+</html>
